@@ -41,6 +41,78 @@ helm --namespace namespaceNameHere delete platformNameHere
 
 
 
+<br><br>
+<br><br>
+_________________________________________________
+_________________________________________________
+<br><br>
+<br><br>
+
+# Helm Install
+- https://helm.sh/docs/helm/helm_install/
+```shell
+$ helm install -f myvalues.yaml myredis ./redis
+or
+
+$ helm install --set name=prod myredis ./redis
+or
+
+$ helm install --set-string long_int=1234567890 myredis ./redis
+or
+
+$ helm install --set-file my_script=dothings.sh myredis ./redis
+or
+
+$ helm install --set-json 'master.sidecars=[{"name":"sidecar","image":"myImage","imagePullPolicy":"Always","ports":[{"name":"portname","containerPort":1234}]}]' myredis ./redis
+
+```
+
+
+
+<br><br>
+<br><br>
+
+## Install helm repo
+```
+helm repo add [repo-name] [repo-url]
+# helm repo add stable https://charts.helm.sh/stable
+
+helm repo update
+
+helm install [release-name] [repo-name]/[chart-name]
+# helm install my-nginx stable/nginx
+
+# prüfe installation
+helm list
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -53,7 +125,14 @@ _________________________________________________
 
 # Helm Charts
 
+
+
+
 <br><br>
+<br><br>
+<br><br>
+<br><br>
+
 
 ## Instances
 ```
