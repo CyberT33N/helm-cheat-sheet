@@ -37,6 +37,36 @@ helm --namespace namespaceNameHere delete platformNameHere
 
 
 
+<br><br>
+<br><br>
+_________________________________________________
+_________________________________________________
+<br><br>
+<br><br>
+
+
+# Helm Upgrade
+https://helm.sh/docs/helm/helm_upgrade/
+- This command upgrades a release to a new version of a chart.
+
+The upgrade arguments must be a release and chart. The chart argument can be either: a chart reference('example/mariadb'), a path to a chart directory, a packaged chart, or a fully qualified URL. For chart references, the latest version will be specified unless the '--version' flag is set.
+```shell
+helm upgrade --set foo=bar --set foo=newbar redis ./redis
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
