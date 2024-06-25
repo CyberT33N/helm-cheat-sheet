@@ -199,7 +199,7 @@ abc_push:
 <br><br>
 <br><br>
 
-## Use heml chart values an environment variable in your deployment
+## template Function
 ```
 env:
   - name: 'APP_VERSION'
@@ -207,6 +207,23 @@ env:
   - name: 'IMAGE_VERSION'
     value: {{ .Values.test_backend.version | squote }}
 ```
+
+
+<br><br>
+<br><br>
+
+
+### toYaml
+
+#### Use dashes
+- {{ toYaml Values.jobs.update-es.resources | nindent 12 }} = error
+- You can not import properties with bashes. As workaround you can use:
+```yaml
+{{ toYaml (index .Values "jobs" "update-es" "resources") | nindent 12 }}
+```
+
+
+
 
 <br><br>
 <br><br>
