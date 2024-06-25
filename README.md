@@ -69,6 +69,19 @@ $ helm install --set-json 'master.sidecars=[{"name":"sidecar","image":"myImage",
 
 
 
+
+
+<br><br>
+<br><br>
+
+
+## --set
+- https://helm.sh/docs/intro/using_helm/#the-format-and-limitations-of---set
+```shell
+--set outer.inner=value
+```
+
+
 <br><br>
 <br><br>
 
