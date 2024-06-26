@@ -292,11 +292,17 @@ env:
 
 ### toYaml
 
+<br><br>
+<br><br>
+
 #### Use dashes
 - {{ toYaml Values.jobs.update-es.resources | nindent 12 }} = error
-- You can not import properties with bashes. As workaround you can use:
+- You can not import properties with dashes. As workaround you can use:
 ```yaml
-{{ toYaml (index .Values "jobs" "update-es" "resources") | nindent 12 }}
+{{- tpl (toYaml (index .Values "backup" "mongodb-data" "env")) . | nindent 12 }}
+
+# Without templating
+# {{ toYaml (index .Values "jobs" "update-es" "resources") | nindent 12 }}
 ```
 
 
