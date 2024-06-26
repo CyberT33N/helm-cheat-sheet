@@ -304,6 +304,8 @@ env:
 # Without templating
 # {{ toYaml (index .Values "jobs" "update-es" "resources") | nindent 12 }}
 ```
+- index is able to read properties with dashes
+- tpl will resolve something like `{{ .Values.cluster }}-mongodb-data-bck`
 
 
 
