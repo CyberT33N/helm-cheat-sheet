@@ -245,6 +245,88 @@ _________________________________________________
 
 # Helm Charts
 
+<br><br>
+<br><br>
+<br><br>
+<br><br>
+
+
+
+## Hooks
+- https://v2.helm.sh/docs/charts_hooks/
+```
+The following hooks are defined:
+
+pre-install: Executes after templates are rendered, but before any resources are created in Kubernetes.
+post-install: Executes after all resources are loaded into Kubernetes
+pre-delete: Executes on a deletion request before any resources are deleted from Kubernetes.
+post-delete: Executes on a deletion request after all of the release’s resources have been deleted.
+pre-upgrade: Executes on an upgrade request after templates are rendered, but before any resources are loaded into Kubernetes (e.g. before a Kubernetes apply operation).
+post-upgrade: Executes on an upgrade after all resources have been upgraded.
+pre-rollback: Executes on a rollback request after templates are rendered, but before any resources have been rolled back.
+post-rollback: Executes on a rollback request after all resources have been modified.
+crd-install: Adds CRD resources before any other checks are run. This is used only on CRD definitions that are used by other manifests in the chart.
+test-success: Executes when running helm test and expects the pod to return successfully (return code == 0).
+test-failure: Executes when running helm test and expects the pod to fail (return code != 0).
+```
+```yaml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: "{{ .Release.Name }}"
+  labels:
+    app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+    app.kubernetes.io/instance: {{ .Release.Name | quote }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+    helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+  annotations:
+    # This is what defines this resource as a hook. Without this line, the
+    # job is considered part of the release.
+    "helm.sh/hook": post-install
+    "helm.sh/hook-weight": "-5"
+    "helm.sh/hook-delete-policy": hook-succeeded
+spec:
+  template:
+    metadata:
+      name: "{{ .Release.Name }}"
+      labels:
+        app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+        app.kubernetes.io/instance: {{ .Release.Name | quote }}
+        helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: post-install-job
+        image: "alpine:3.3"
+        command: ["/bin/sleep","{{ default "10" .Values.sleepyTime }}"]
+```
+
+### Hooks weight
+- Tiller sorts hooks by weight (assigning a weight of 0 by default) and by name for those hooks with the same weight in ascending order.
+  - This means 0 will be executed first and 1 as next one. So you can create different files 
+```
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: pre-deploy-hook-2
+  annotations:
+    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook-weight": "1"
+spec:
+  template:
+    spec:
+      containers:
+        - name: pre-deploy-container-2
+          image: busybox
+          command: ['sh', '-c', 'echo "Running second pre-deploy hook"; sleep 10']
+      restartPolicy: Never
+```
+
+
+
+
+
+
 
 
 
@@ -306,60 +388,5 @@ env:
 ```
 - index is able to read properties with dashes
 - tpl will resolve something like `{{ .Values.cluster }}-mongodb-data-bck`
-
-
-
-
-<br><br>
-<br><br>
-
-## Hooks
-- https://helm.sh/docs/topics/charts_hooks/
-```
-pre-install	Executes after templates are rendered, but before any resources are created in Kubernetes
-post-install	Executes after all resources are loaded into Kubernetes
-
-pre-delete	Executes on a deletion request before any resources are deleted from Kubernetes
-post-delete	Executes on a deletion request after all of the release's resources have been deleted
-
-pre-upgrade	Executes on an upgrade request after templates are rendered, but before any resources are updated
-post-upgrade	Executes on an upgrade request after all resources have been upgraded
-
-pre-rollback	Executes on a rollback request after templates are rendered, but before any resources are rolled back
-post-rollback	Executes on a rollback request after all resources have been modified
-
-test	Executes when the Helm test subcommand is invoked ( view test docs)
-```
-```yaml
-apiVersion: batch/v1
-kind: Job
-metadata:
-  name: "{{ .Release.Name }}"
-  labels:
-    app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
-    app.kubernetes.io/instance: {{ .Release.Name | quote }}
-    app.kubernetes.io/version: {{ .Chart.AppVersion }}
-    helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
-  annotations:
-    # This is what defines this resource as a hook. Without this line, the
-    # job is considered part of the release.
-    "helm.sh/hook": post-install
-    "helm.sh/hook-weight": "-5"
-    "helm.sh/hook-delete-policy": hook-succeeded
-spec:
-  template:
-    metadata:
-      name: "{{ .Release.Name }}"
-      labels:
-        app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
-        app.kubernetes.io/instance: {{ .Release.Name | quote }}
-        helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
-    spec:
-      restartPolicy: Never
-      containers:
-      - name: post-install-job
-        image: "alpine:3.3"
-        command: ["/bin/sleep","{{ default "10" .Values.sleepyTime }}"]
-```
 
 
