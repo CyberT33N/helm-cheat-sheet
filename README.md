@@ -37,6 +37,83 @@ helm --namespace namespaceNameHere delete platformNameHere
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<br><br>
+<br><br>
+_________________________________________________
+_________________________________________________
+<br><br>
+<br><br>
+
+
+# Helm Template
+- [https://helm.sh/docs/helm/helm_upgrade/](https://helm.sh/docs/helm/helm_template/)
+- Render chart templates locally and display the output.
+
+Any values that would normally be looked up or retrieved in-cluster will be faked locally. Additionally, none of the server-side testing of chart validity (e.g. whether an API is supported) is done.
+```shell
+helm template [NAME] [CHART] [flags]
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 <br><br>
 <br><br>
 _________________________________________________
