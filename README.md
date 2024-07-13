@@ -448,13 +448,108 @@ _________________________________________________
 <br><br>
 <br><br>
 
-# Helm Charts Scripts
+# Helm Charts Third Party
 
 ## MongoDB
 - You can see all available options inside of the values.yaml or by running `helm show values bitnami/mongodb`:
   - https://github.com/bitnami/charts/blob/main/bitnami/mongodb/values.yaml
     
   - For more details about the install process please check https://github.com/CyberT33N/helm-cheat-sheet/blob/main/README.md#helm-install 
+
+- custom-values.yaml
+```yaml
+architecture: standalone
+
+auth:
+  rootUser: root
+  rootPassword: test
+
+persistence:
+  size: 10Gi
+  storageClass: standard
+
+service:
+  type: NodePort
+  nodePorts:
+    mongodb: 30644
+
+## MongoDB(&reg;) pods' liveness probe. Evaluated as a template.
+## ref: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#container-probes
+## @param livenessProbe.enabled Enable livenessProbe
+## @param livenessProbe.initialDelaySeconds Initial delay seconds for livenessProbe
+## @param livenessProbe.periodSeconds Period seconds for livenessProbe
+## @param livenessProbe.timeoutSeconds Timeout seconds for livenessProbe
+## @param livenessProbe.failureThreshold Failure threshold for livenessProbe
+## @param livenessProbe.successThreshold Success threshold for livenessProbe
+##
+# livenessProbe:
+#   enabled: false
+#   initialDelaySeconds: 30
+#   periodSeconds: 1000
+#   timeoutSeconds: 10
+#   failureThreshold: 6
+#   successThreshold: 1
+## MongoDB(&reg;) pods' readiness probe. Evaluated as a template.
+## ref: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#container-probes
+## @param readinessProbe.enabled Enable readinessProbe
+## @param readinessProbe.initialDelaySeconds Initial delay seconds for readinessProbe
+## @param readinessProbe.periodSeconds Period seconds for readinessProbe
+## @param readinessProbe.timeoutSeconds Timeout seconds for readinessProbe
+## @param readinessProbe.failureThreshold Failure threshold for readinessProbe
+## @param readinessProbe.successThreshold Success threshold for readinessProbe
+##
+# readinessProbe:
+#   enabled: false
+#   initialDelaySeconds: 5
+#   periodSeconds: 1000
+#   timeoutSeconds: 5
+#   failureThreshold: 6
+#   su
+# service:
+#   type: "NodePort"
+#   nodePort: 30018ccessThreshold: 1
+## Slow starting containers can be protected through startup probes
+## Startup probes are available in Kubernetes version 1.16 and above
+## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#define-startup-probes
+## @param startupProbe.enabled Enable startupProbe
+## @param startupProbe.initialDelaySeconds Initial delay seconds for startupProbe
+## @param startupProbe.periodSeconds Period seconds for startupProbe
+## @param startupProbe.timeoutSeconds Timeout seconds for startupProbe
+## @param startupProbe.failureThreshold Failure threshold for startupProbe
+## @param startupProbe.successThreshold Success threshold for startupProbe
+##
+# startupProbe:
+#   enabled: false
+#   initialDelaySeconds: 5
+#   periodSeconds: 20
+#   timeoutSeconds: 10
+#   successThreshold: 1
+#   failureThreshold: 30
+
+# Minimum 900 cpu needed that timeout will not trigger
+# 1250 cpu at limit is maybe too low because sometimes mongodb service will crash
+# resources:
+#   limits:
+#     memory: "2048Mi"
+#     cpu: "1500m"
+#   requests:
+#     memory: "1024Mi"
+#     cpu: "900m"
+
+# arbiter:
+#   resources:
+#     limits:
+#       memory: "2048Mi"
+#       cpu: "300m"
+#     requests:
+#       memory: "1024Mi"
+#       cpu: "100m"
+```
+
+<br><br>
+<br><br>
+
+### Add repo
 ```shell
 # Add bitnami repo
 helm repo add bitnami https://charts.bitnami.com/bitnami
@@ -464,10 +559,18 @@ helm repo update
 
 # Auflisten der verfügbaren Helm Chart Versionen
 helm search repo bitnami/mongodb --versions
+```
 
+<br><br>
+<br><br>
+
+### Install Helm Chart
+```shell
 # This will download the mongodb helm chart to the folder ./mongodb/Chart
 cd ~/Projects/minikube
 mkdir -p ./mongodb/Chart
+
+# 15.6.12 = MongoDB 7
 helm pull bitnami/mongodb --version 15.6.12 --untar --untardir ./tmp
 cp -r ./tmp/mongodb/* ./mongodb/Chart
 rm -rf ./tmp
@@ -482,90 +585,19 @@ kubectl config use-context minikube
 helm install mongodb-dev ./mongodb/Chart --namespace dev -f ./mongodb/custom-values.yaml
 ```
 
-- custom-values.yaml
-```yaml
-architecture: standalone
+<br><br>
+<br><br>
 
-auth:
-  rootUser: root
-  rootPassword: test
-
-persistence:
-  size: 10Gi
-  storageClass: standard
-
-
-## MongoDB(&reg;) pods' liveness probe. Evaluated as a template.
-## ref: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#container-probes
-## @param livenessProbe.enabled Enable livenessProbe
-## @param livenessProbe.initialDelaySeconds Initial delay seconds for livenessProbe
-## @param livenessProbe.periodSeconds Period seconds for livenessProbe
-## @param livenessProbe.timeoutSeconds Timeout seconds for livenessProbe
-## @param livenessProbe.failureThreshold Failure threshold for livenessProbe
-## @param livenessProbe.successThreshold Success threshold for livenessProbe
-##
-livenessProbe:
-  enabled: false
-  initialDelaySeconds: 30
-  periodSeconds: 1000
-  timeoutSeconds: 10
-  failureThreshold: 6
-  successThreshold: 1
-## MongoDB(&reg;) pods' readiness probe. Evaluated as a template.
-## ref: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#container-probes
-## @param readinessProbe.enabled Enable readinessProbe
-## @param readinessProbe.initialDelaySeconds Initial delay seconds for readinessProbe
-## @param readinessProbe.periodSeconds Period seconds for readinessProbe
-## @param readinessProbe.timeoutSeconds Timeout seconds for readinessProbe
-## @param readinessProbe.failureThreshold Failure threshold for readinessProbe
-## @param readinessProbe.successThreshold Success threshold for readinessProbe
-##
-readinessProbe:
-  enabled: false
-  initialDelaySeconds: 5
-  periodSeconds: 1000
-  timeoutSeconds: 5
-  failureThreshold: 6
-  successThreshold: 1
-## Slow starting containers can be protected through startup probes
-## Startup probes are available in Kubernetes version 1.16 and above
-## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#define-startup-probes
-## @param startupProbe.enabled Enable startupProbe
-## @param startupProbe.initialDelaySeconds Initial delay seconds for startupProbe
-## @param startupProbe.periodSeconds Period seconds for startupProbe
-## @param startupProbe.timeoutSeconds Timeout seconds for startupProbe
-## @param startupProbe.failureThreshold Failure threshold for startupProbe
-## @param startupProbe.successThreshold Success threshold for startupProbe
-##
-startupProbe:
-  enabled: false
-  initialDelaySeconds: 5
-  periodSeconds: 20
-  timeoutSeconds: 10
-  successThreshold: 1
-  failureThreshold: 30
-
-# Minimum 900 cpu needed that timeout will not trigger
-# 1250 cpu at limit is maybe too low because sometimes mongodb service will crash
-resources:
-  limits:
-    memory: "2048Mi"
-    cpu: "1500m"
-  requests:
-    memory: "1024Mi"
-    cpu: "900m"
-
-service:
-  type: "NodePort"
-  nodePort: 30018
-
-arbiter:
-  resources:
-    limits:
-      memory: "2048Mi"
-      cpu: "300m"
-    requests:
-      memory: "1024Mi"
-      cpu: "100m"
-
+### Upgrade Helm Chart
+```shell
+kubectl config use-context minikube
+helm upgrade mongodb-dev ./mongodb/Chart --namespace dev -f ./mongodb/custom-values.yaml --atomic
 ```
+
+### Delete Deployment
+```shell
+kubectl config use-context minikube
+helm --namespace dev delete mongodb-dev
+```
+
+
