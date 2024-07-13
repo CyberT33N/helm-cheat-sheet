@@ -455,7 +455,7 @@ _________________________________________________
   - https://github.com/bitnami/charts/blob/main/bitnami/mongodb/values.yaml
     
   - For more details about the install process please check https://github.com/CyberT33N/helm-cheat-sheet/blob/main/README.md#helm-install 
-```
+```shell
 # Add bitnami repo
 helm repo add bitnami https://charts.bitnami.com/bitnami
 
@@ -472,11 +472,11 @@ helm pull bitnami/mongodb --version 15.6.12 --untar --untardir ./tmp
 cp -r ./tmp/mongodb/* ./mongodb/Chart
 rm -rf ./tmp
 
+# Create custom-values.yaml
+touch ./mongodb/custom-values.yaml
+
 # Change context
 kubectl config use-context minikube
-
-# Create custom-values.yaml
-touch
 
 # Install
 helm install mongodb-dev ./mongodb/Chart --namespace dev -f ./mongodb/custom-values.yaml
@@ -555,9 +555,9 @@ resources:
     memory: "1024Mi"
     cpu: "900m"
 
-# service:
-#   type: "NodePort"
-#   nodePort: 30018
+service:
+  type: "NodePort"
+  nodePort: 30018
 
 arbiter:
   resources:
