@@ -450,6 +450,11 @@ _________________________________________________
 # Helm Charts Scripts
 
 ## MongoDB
+- You can see all available options inside of the values.yaml or by running `helm show values bitnami/mongodb`:
+  - https://github.com/bitnami/charts/blob/main/bitnami/mongodb/values.yaml
+    
+  - You can overwrite them at the install by using:
+   - `--set architecture=replicaset`
 ```
 # Add bitnami repo
 helm repo add bitnami https://charts.bitnami.com/bitnami
@@ -460,9 +465,13 @@ helm repo update
 # Auflisten der verfügbaren Helm Chart Versionen
 helm search repo bitnami/mongodb --versions
 
+# This will download the mongodb helm chart to the mongodb folder
+cd ~/Projects/minikube
+helm pull bitnami/mongodb --version 12.1.31 --untar
+
 # Change context
 kubectl config use-context minikube
 
-cd ~/Projects/minikube
-helm pull bitnami/mongodb --version 12.1.31 --untar 
+# Install
+helm install mongodb-dev bitnami/mongodb --namespace dev --set architecture=replicaset
 ```
