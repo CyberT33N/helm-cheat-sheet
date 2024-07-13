@@ -211,6 +211,7 @@ $ helm install --set-json 'master.sidecars=[{"name":"sidecar","image":"myImage",
 
 
 
+
 <br><br>
 <br><br>
 
@@ -453,8 +454,7 @@ _________________________________________________
 - You can see all available options inside of the values.yaml or by running `helm show values bitnami/mongodb`:
   - https://github.com/bitnami/charts/blob/main/bitnami/mongodb/values.yaml
     
-  - You can overwrite them at the install by using:
-   - `--set architecture=replicaset`
+  - For more details about the install process please check https://github.com/CyberT33N/helm-cheat-sheet/blob/main/README.md#helm-install 
 ```
 # Add bitnami repo
 helm repo add bitnami https://charts.bitnami.com/bitnami
@@ -465,13 +465,28 @@ helm repo update
 # Auflisten der verfügbaren Helm Chart Versionen
 helm search repo bitnami/mongodb --versions
 
-# This will download the mongodb helm chart to the mongodb folder
+# This will download the mongodb helm chart to the folder ./mongodb/Chart
 cd ~/Projects/minikube
-helm pull bitnami/mongodb --version 12.1.31 --untar
+mkdir -p ./mongodb/Chart
+helm pull bitnami/mongodb --version 15.6.12 --untar --untardir ./tmp
+cp -r ./tmp/mongodb/* ./mongodb/Chart
+rm -rf ./tmp
 
 # Change context
 kubectl config use-context minikube
 
+# Create custom-values.yaml
+touch
+
 # Install
-helm install mongodb-dev bitnami/mongodb --namespace dev --set architecture=replicaset
+helm install mongodb-dev ./mongodb/Chart --namespace dev -f ./mongodb/custom-values.yaml
+```
+
+- custom-values.yaml
+```yaml
+architecture: standalone
+
+auth:
+  rootUser: root
+  rootPassword: test
 ```
