@@ -419,7 +419,7 @@ _________________________________________________
 ## MongoDB
 ```
 # Add bitnami repo
-helm repo add bitnami <https://charts.bitnami.com/bitnami>
+helm repo add bitnami https://charts.bitnami.com/bitnami
 
 # Update helm repo
 helm repo update
