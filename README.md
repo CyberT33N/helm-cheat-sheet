@@ -489,4 +489,83 @@ architecture: standalone
 auth:
   rootUser: root
   rootPassword: test
+
+persistence:
+  size: 10Gi
+  storageClass: standard
+
+
+## MongoDB(&reg;) pods' liveness probe. Evaluated as a template.
+## ref: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#container-probes
+## @param livenessProbe.enabled Enable livenessProbe
+## @param livenessProbe.initialDelaySeconds Initial delay seconds for livenessProbe
+## @param livenessProbe.periodSeconds Period seconds for livenessProbe
+## @param livenessProbe.timeoutSeconds Timeout seconds for livenessProbe
+## @param livenessProbe.failureThreshold Failure threshold for livenessProbe
+## @param livenessProbe.successThreshold Success threshold for livenessProbe
+##
+livenessProbe:
+  enabled: false
+  initialDelaySeconds: 30
+  periodSeconds: 1000
+  timeoutSeconds: 10
+  failureThreshold: 6
+  successThreshold: 1
+## MongoDB(&reg;) pods' readiness probe. Evaluated as a template.
+## ref: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#container-probes
+## @param readinessProbe.enabled Enable readinessProbe
+## @param readinessProbe.initialDelaySeconds Initial delay seconds for readinessProbe
+## @param readinessProbe.periodSeconds Period seconds for readinessProbe
+## @param readinessProbe.timeoutSeconds Timeout seconds for readinessProbe
+## @param readinessProbe.failureThreshold Failure threshold for readinessProbe
+## @param readinessProbe.successThreshold Success threshold for readinessProbe
+##
+readinessProbe:
+  enabled: false
+  initialDelaySeconds: 5
+  periodSeconds: 1000
+  timeoutSeconds: 5
+  failureThreshold: 6
+  successThreshold: 1
+## Slow starting containers can be protected through startup probes
+## Startup probes are available in Kubernetes version 1.16 and above
+## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#define-startup-probes
+## @param startupProbe.enabled Enable startupProbe
+## @param startupProbe.initialDelaySeconds Initial delay seconds for startupProbe
+## @param startupProbe.periodSeconds Period seconds for startupProbe
+## @param startupProbe.timeoutSeconds Timeout seconds for startupProbe
+## @param startupProbe.failureThreshold Failure threshold for startupProbe
+## @param startupProbe.successThreshold Success threshold for startupProbe
+##
+startupProbe:
+  enabled: false
+  initialDelaySeconds: 5
+  periodSeconds: 20
+  timeoutSeconds: 10
+  successThreshold: 1
+  failureThreshold: 30
+
+# Minimum 900 cpu needed that timeout will not trigger
+# 1250 cpu at limit is maybe too low because sometimes mongodb service will crash
+resources:
+  limits:
+    memory: "2048Mi"
+    cpu: "1500m"
+  requests:
+    memory: "1024Mi"
+    cpu: "900m"
+
+# service:
+#   type: "NodePort"
+#   nodePort: 30018
+
+arbiter:
+  resources:
+    limits:
+      memory: "2048Mi"
+      cpu: "300m"
+    requests:
+      memory: "1024Mi"
+      cpu: "100m"
+
 ```
