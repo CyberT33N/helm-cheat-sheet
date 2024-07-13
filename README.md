@@ -1,4 +1,4 @@
-# Helm Cheat Sheet
+-# Helm Cheat Sheet
 Helm Cheat Sheet with the most needed stuff..
 
 
@@ -390,3 +390,46 @@ env:
 - tpl will resolve something like `{{ .Values.cluster }}-mongodb-data-bck`
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<br><br>
+<br><br>
+_________________________________________________
+_________________________________________________
+<br><br>
+<br><br>
+
+# Helm Charts Scripts
+
+## MongoDB
+```
+# Add bitnami repo
+helm repo add bitnami <https://charts.bitnami.com/bitnami>
+
+# Update helm repo
+helm repo update
+
+# Auflisten der verfügbaren Helm Chart Versionen
+helm search repo bitnami/mongodb --versions
+
+# Change context
+kubectl config use-context minikube
+
+cd ~/Projects/minikube
+helm pull bitnami/mongodb --version 12.1.31 --untar 
+```
