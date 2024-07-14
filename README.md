@@ -791,5 +791,16 @@ kubectl create secret -n dev generic gitlab-root-password-custom --from-literal=
 ```shell
 kubectl describe ingress gitlab-dev-webservice-default -n dev
 ```
+
+<br><br>
+
+### Git
+- Git is available over port 32022. Check this guide for how to to create and to add SSH Key (https://github.com/CyberT33N/git-cheat-sheet/blob/main/README.md#ssh)
+  - Then after this you run `ssh-add ~/.ssh/github/id_ecdsa` and then after this:
+```shell
+git remote add gitlabInternal ssh://git@gitlab.local.com:32022/websites/anyTest.git
+
+```
+
 </details>
 
