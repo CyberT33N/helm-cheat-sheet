@@ -31,56 +31,67 @@ sudo apt-get install helm
 
 <br><br>
 <br><br>
-_____________________________________________________
-_____________________________________________________
+_________________________________________________
+_________________________________________________
 <br><br>
 <br><br>
 
 
+# Uninstall
+- Uninstall releases
+- https://helm.sh/docs/helm/helm_uninstall/
+```bash
+helm --namespace namespaceNameHere delete platformNameHere
+```
+- If you cancel helm install and you can not re-install your deploymonet you maybe get `Error: UPGRADE FAILED: another operation (install/upgrade/rollback) is in progress`. In this case you could completly uninstall your release and then install it again
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<br><br>
+<br><br>
+_________________________________________________
+_________________________________________________
+<br><br>
+<br><br>
+
+
+# List
+- List releases
+- [https://helm.sh/docs/helm/helm_rollback/](https://helm.sh/docs/helm/helm_list/)
+
+<br><br>
 
 ## Alle Releases auflisten
 ```bash
 helm list -n namespaceNameHere
 ```
-  - Wenn man den Namespace hier nicht findet helfen auch NICHT die Helm Rollback und Uninstall Befehle um es zu fixen
-
-<br><br>
-
-
-## Uninstall Platform:
- - Error: UPGRADE FAILED: another operation (install/upgrade/rollback) is in progress
-
-```bash
-helm --namespace namespaceNameHere delete platformNameHere
-```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -99,6 +110,7 @@ _________________________________________________
 
 
 # Rollback
+- https://helm.sh/docs/helm/helm_rollback/
 
 <br><br>
 
