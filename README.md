@@ -46,10 +46,6 @@ helm list -n namespaceNameHere
 
 <br><br>
 
-## Rollback zu der letzten Revision:
-```bash
-helm --namespace namespaceNameHere rollback platform
-```
 
 ## Uninstall Platform:
  - Error: UPGRADE FAILED: another operation (install/upgrade/rollback) is in progress
@@ -90,6 +86,26 @@ helm --namespace namespaceNameHere delete platformNameHere
 
 
 
+
+
+
+
+<br><br>
+<br><br>
+_________________________________________________
+_________________________________________________
+<br><br>
+<br><br>
+
+
+# Rollback
+
+<br><br>
+
+## Rollback zu der letzten Revision:
+```bash
+helm --namespace namespaceNameHere rollback platform
+```
 
 
 
