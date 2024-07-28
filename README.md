@@ -640,26 +640,336 @@ helm --namespace dev delete mongodb-dev
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<br><br>
+<br><br>
+
+
+
 ## Gitlab
 <details><summary>Click to expand..</summary>
-  
+
+  - The Gitlab helm Chart will use if configured with the minikube example from official docs their own self-signed certificates and we do not have to have to worry about and this is what we will do. If needed you can create own certs and include them but it is not recommended because it will be a lot of work. You basicly only have to include the genereated secret to the gitlab-runner with:
+```yaml
+gitlab-runner:
+  install: true
+  certsSecretName: gitlab-dev-wildcard-tls-chain
+```
+
+<br><br>
+<br><br>
+
 ### Guides
 - https://docs.gitlab.com/charts/development/minikube/
+
+<br><br>
 
 ### Links
 - https://gitlab.local.com/users/sign_in
 
 <br><br>
+
+#### UI
+- https://gitlab.local.com
+- root:69aZc996
+
+
+<br><br>
 <br><br>
 
 ### Hosts
-- Add this to your `/etc/hosts` file. In your custom-values.yaml you can also add global.hosts.domain=192.168.49.2.nip.io
+- Add this to your `/etc/hosts` file. In your custom-values.yaml you can also add instead global.hosts.domain=192.168.49.2.nip.io
 ```shell
 sudo gedit /etc/hosts
 
 # ==== MINIKUBE ====
 192.168.49.2 gitlab.local.com
+192.168.49.2 minio.local.com
 ```
+
+
+
+
+
+<br><br>
+<br><br>
+
+### setup.sh
+```shell
+#!/bin/bash
+cd "$(dirname "$0")"; printf "\nCurrent working directory:"; pwd
+
+kubectl config use-context minikube
+
+# ==== INSTALL ====
+helm install gitlab-dev ./Chart --namespace dev -f ./custom-values.yaml
+
+# Wait until gitlab UI is ready..
+until kubectl get pods --namespace dev | grep gitlab-dev-webservice-default | grep Running | grep 2/2
+do
+    echo "Wait for healthy gitlab-dev-webservice-default Pods..."
+    sleep 10
+done
+echo "Gitlab UI is ready.."
+sleep 10
+
+# ==== CHANGE GITLAB ROOT PASSWORD ====
+NAMESPACE="dev"
+POD_NAME=$(kubectl get pods -n dev | grep gitlab-dev-toolbox | awk '{print $1}')
+
+# Prüfen, ob der Pod-Name gefunden wurde
+if [ -z "$POD_NAME" ]; then
+  echo "Kein Pod mit dem Namen 'gitlab-dev-toolbox' gefunden."
+  exit 1
+fi
+
+# Befehl im Pod ausführen
+kubectl exec -it $POD_NAME -n $NAMESPACE -- bash -c "gitlab-rails runner \"user = User.find_by(username: 'root'); user.password = '69aZc996'; user.password_confirmation = '69aZc996'; user.save!\""
+```
+
+
+
+
+<br><br>
+<br><br>
+
+### custom.values.yaml
+```shell
+# values-minikube.yaml
+# This example intended as baseline to use Minikube for the deployment of GitLab
+# - Services that are not compatible with how Minikube runs are disabled
+# - Configured to use 192.168.49.2, and nip.io for the domain
+
+# initialRootPassword:
+#   secret: gitlab-root-password-custom
+#   key: password
+
+# Minimal settings
+global:
+  minio:
+    enabled: true
+
+  ingress:
+    configureCertmanager: false
+    class: "nginx"
+    tls:
+      external: true
+
+  hosts:
+    domain: local.com
+    externalIP: 192.168.49.2
+    
+  shell:
+    # Configure the clone link in the UI to include the high-numbered NodePort
+    # value from below (`gitlab.gitlab-shell.service.nodePort`)
+    port: 32022
+
+# Don't use certmanager, we'll self-sign
+certmanager:
+  install: false
+
+# Use the `ingress` addon, not our Ingress (can't map 22/80/443)
+nginx-ingress:
+  enabled: false
+
+# Map gitlab-shell to a high-numbered NodePort cloning over SSH since
+# Minikube takes port 22.
+gitlab:
+  gitlab-shell:
+    service:
+      type: NodePort
+      nodePort: 32022
+
+# Provide gitlab-runner with secret object containing self-signed certificate chain
+gitlab-runner:
+  install: true
+  certsSecretName: gitlab-dev-wildcard-tls-chain
+
+  runners:
+    cache:
+    ## S3 the name of the secret.
+      secretName: minio-dev
+    ## Use this line for access using gcs-access-id and gcs-private-key
+    # secretName: gcsaccess
+    ## Use this line for access using google-application-credentials file
+    # secretName: google-application-credentials
+    ## Use this line for access using Azure with azure-account-name and azure-account-key
+    # secretName: azureaccess
+
+    config: |
+      [[runners]]
+        image = "ubuntu:22.04"
+
+        {{- if .Values.global.minio.enabled }}
+        [runners.cache]
+          Type = "s3"
+          Path = "gitlab-runner"
+          Shared = true
+          [runners.cache.s3]
+            AccessKey = "test69696969"
+            SecretKey = "test69696969"
+            ServerAddress = "192.168.49.2.nip.io:30000"
+            BucketName = "runner-cache"
+            BucketLocation = "us-east-1"
+            Insecure = true
+        {{ end }}
+```
+
+
+
+
+
+
+
+
+
+
+
+
+<br><br>
+<br><br>
+
+
+### Minio
+- I did not find a way to get the included minio release running because of the tls self signed cert problem
+    - https://gitlab.com/gitlab-org/charts/gitlab-runner/-/issues/75#note_211405230
+
+- But we can deploy our own minio instance and then use it inside of our gitlab-runner. Please check the MinIO Install section (https://github.com/CyberT33N/minio-cheat-sheet/blob/main/README.md) above or run `./minio/setup.sh`
+  - The setup will also create the needed bucket `runner-cache` for the gitlab-runner
+  - It will also create the needed secret `minio-dev` inside of our `dev` namespace
+  ```yaml
+  gitlab-runner:
+    runners:
+      cache:
+      ## S3 the name of the secret.
+        secretName: minio-dev
+  ```
+
+- In order to use our own minio instance with the gitlab runner we have to make sure to set the correct config:
+```yaml
+# Provide gitlab-runner with secret object containing self-signed certificate chain
+gitlab-runner:
+  install: true
+  certsSecretName: gitlab-dev-wildcard-tls-chain
+
+  runners:
+    cache:
+    ## S3 the name of the secret.
+      secretName: minio-dev
+    ## Use this line for access using gcs-access-id and gcs-private-key
+    # secretName: gcsaccess
+    ## Use this line for access using google-application-credentials file
+    # secretName: google-application-credentials
+    ## Use this line for access using Azure with azure-account-name and azure-account-key
+    # secretName: azureaccess
+
+    config: |
+      [[runners]]
+        image = "ubuntu:22.04"
+
+        {{- if .Values.global.minio.enabled }}
+        [runners.cache]
+          Type = "s3"
+          Path = "gitlab-runner"
+          Shared = true
+          [runners.cache.s3]
+            AccessKey = "test69696969"
+            SecretKey = "test69696969"
+            ServerAddress = "192.168.49.2.nip.io:30000"
+            BucketName = "runner-cache"
+            BucketLocation = "us-east-1"
+            Insecure = true
+        {{ end }}
+```
+- **AccessKey & SecretKey must be set or you get error that the url is not found. The values must be valid**
+- In our case the minio instance is not https so set `Insecure = true`
+- As mentioned before the bucket must already exists `mc mb minio/runner-cache`
+- **runners.cache.secretName must be set**. As mentioned above the secret will be created from our side. However this is what it will look inside:
+```
+MINIO_ROOT_PASSWORD: test69696969                                                                                               │
+MINIO_ROOT_USER: test69696969      
+```
+- **certsSecretName: gitlab-dev-wildcard-tls-chain** must be set or you will get tls error that gitlab-runner can not connect to gitlab.local.com
+
+
+
+<br><br>
+<br><br>
+
+### Certs
+- This section is not needed for the gitlab helm chart for minikube because of automated creation for self-signed certs. However, it is maybe usefully for somebody
+
+<br><br>
+
+#### Create self signed cert
+```shell
+openssl req -x509 -nodes -days 3650 -newkey rsa:2048 -keyout gitlab.local.com.key -out gitlab.local.com.crt -subj "/C=DE/ST=Some-State/L=City/O=Organization/OU=Department/CN=local.com"
+```
+
+<br><br>
+
+### Download cert and create secret
+
+```shell
+# Create cert
+openssl s_client -showcerts -connect gitlab.local.com:443 -servername gitlab.local.com < /dev/null 2>/dev/null | openssl x509 -outform PEM > ./gitlab/gitlab.local.com.crt
+
+if kubectl get secret -n dev gitlab-cert-self >/dev/null 2>&1; then
+    kubectl delete secret -n dev gitlab-cert-self
+fi
+
+kubectl create secret generic gitlab-cert-self \
+--namespace dev \
+--from-file=./gitlab/gitlab.local.com.crt
+```
+
+
+
+<br><br>
+<br><br>
+
+### Git
+- We use NodePort for gitlab-shell in order to be able to push into our repos. Git is available over port 32022. Check this guide for how to to create and to add SSH Key (https://github.com/CyberT33N/git-cheat-sheet/blob/main/README.md#ssh)
+  - Then after this you run `ssh-add ~/.ssh/github/id_ecdsa` and then after this:
+```shell
+git remote add gitlabInternal ssh://git@gitlab.local.com:32022/websites/test.git
+```
+
+
 
 <br><br>
 <br><br>
@@ -693,46 +1003,6 @@ rm -rf ./tmp
 # Create custom-values.yaml
 touch ./gitlab/custom-values.yaml
 
-# Change context
-kubectl config use-context minikube
-
-# if ! kubectl get secret -n dev gitlab-root-password-custom >/dev/null 2>&1; then
-#      kubectl create secret -n dev generic gitlab-root-password-custom --from-literal='password=test'
-# fi
-
-helm install gitlab-dev ./gitlab/Chart --namespace dev -f ./gitlab/custom-values.yaml
-
-# Wait until gitlab UI is ready..
-until kubectl get pods --namespace dev | grep gitlab-dev-webservice-default | grep Running | grep 2/2
-do
-    echo "Wait for healthy gitlab-dev-webservice-default Pods..."
-    sleep 10
-done
-echo "Gitlab UI is ready.."
-sleep 10
-
-# Create cert
-openssl s_client -showcerts -connect gitlab.local.com:443 -servername gitlab.local.com < /dev/null 2>/dev/null | openssl x509 -outform PEM > ./gitlab/gitlab.local.com.crt
-
-if kubectl get secret -n dev gitlab-cert-self >/dev/null 2>&1; then
-    kubectl delete secret -n dev gitlab-cert-self
-fi
-
-kubectl create secret generic gitlab-cert-self \
---namespace dev \
---from-file=./gitlab/gitlab.local.com.crt
-
-NAMESPACE="dev"
-POD_NAME=$(kubectl get pods -n dev | grep gitlab-dev-toolbox | awk '{print $1}')
-
-# Prüfen, ob der Pod-Name gefunden wurde
-if [ -z "$POD_NAME" ]; then
-  echo "Kein Pod mit dem Namen 'gitlab-dev-toolbox' gefunden."
-  exit 1
-fi
-
-# Befehl im Pod ausführen
-kubectl exec -it $POD_NAME -n $NAMESPACE -- bash -c "gitlab-rails runner \"user = User.find_by(username: 'root'); user.password = 'test'; user.password_confirmation = 'test'; user.save!\""
 ```
      - If you get error `download failed after attempts=6: net/http: TLS handshake timeout` in your gitlab-runner deployment try:
      ```shell
@@ -749,7 +1019,7 @@ helm upgrade gitlab-dev ./gitlab/Chart --namespace dev -f ./gitlab/custom-values
 
 <br><br>
 
-### Delete Deployment
+### Delete release
 ```shell
 kubectl config use-context minikube
 helm --namespace dev delete gitlab-dev
@@ -761,8 +1031,6 @@ helm --namespace dev delete gitlab-dev
 ```shell
 kubectl get ingress -lrelease=gitlab-dev -n dev
 ```
-
-<br><br>
 
 <br><br>
 
@@ -813,6 +1081,7 @@ kubectl create secret -n dev generic gitlab-root-password-custom --from-literal=
 #   key: password
 
 ```
+
 <br><br>
 
 ### Check ingress object
@@ -822,13 +1091,7 @@ kubectl describe ingress gitlab-dev-webservice-default -n dev
 
 <br><br>
 
-### Git
-- Git is available over port 32022. Check this guide for how to to create and to add SSH Key (https://github.com/CyberT33N/git-cheat-sheet/blob/main/README.md#ssh)
-  - Then after this you run `ssh-add ~/.ssh/github/id_ecdsa` and then after this:
-```shell
-git remote add gitlabInternal ssh://git@gitlab.local.com:32022/websites/anyTest.git
 
-```
 
 </details>
 
