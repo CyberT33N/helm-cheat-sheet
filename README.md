@@ -307,6 +307,46 @@ _________________________________________________
 
 # Helm Charts
 
+
+<br><br>
+<br><br>
+
+## Sub Charts
+1. Lege das Subchart in das charts-Verzeichnis: Wenn dein Subchart lokal ist, musst du es in den Ordner charts deines übergeordneten Helm-Charts kopieren. Beispielstruktur:
+```
+my-parent-chart/
+├── charts/
+│   └── my-subchart/
+├── Chart.yaml
+├── values.yaml
+├── templates/
+└── ...
+```
+
+2. Keine Chart.yaml-Abhängigkeit notwendig: Du musst das Subchart nicht als Abhängigkeit in der Chart.yaml deines übergeordneten Charts hinzufügen, da es lokal vorliegt und Helm es automatisch erkennt, wenn es im charts-Verzeichnis liegt.
+
+3. Konfiguration des Subcharts in values.yaml: In der values.yaml deines übergeordneten Charts kannst du die Werte für dein Subchart konfigurieren. Helm wird das Subchart unter dem Subchart-Namen erkennen. Beispiel:
+```yaml
+my-subchart:
+  someKey: someValue
+```
+
+4. Chart bereitstellen: Du kannst dein übergeordnetes Chart direkt installieren, und Helm wird das lokale Subchart automatisch verwenden:
+```shell
+helm install my-release ./my-parent-chart
+```
+
+
+
+
+
+
+
+
+
+
+
+
 <br><br>
 <br><br>
 <br><br>
