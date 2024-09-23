@@ -307,7 +307,81 @@ _________________________________________________
 
 # Helm Charts
 
+<br><br>
+<br><br>
 
+## Guides
+- https://helm.sh/docs/chart_template_guide/#the-chart-template-developer-s-guide
+
+
+<br><br>
+<br><br>
+<br><br>
+<br><br>
+
+## Built-in Objects
+- Built-in Objects
+
+<br><br>
+
+### Values
+
+<br><br>
+
+#### Range (for loop)
+- When you use range inside of the file where you want to resolve the value
+
+values.yaml
+```yaml
+redis:
+ password: 'test'
+```
+
+deployment.yaml
+```yaml
+- name: REDIS_PASSWORD
+  value: '{{ $Values.redis.password }}'
+```
+
+
+
+
+
+<br><br>
+
+#### tpl
+- When you use helm template engine inside of the value which you want to resolve
+
+values.yaml
+```yaml
+email:
+  base_url: 'http://email-smtp-svc'
+  base_url_full: '{{ .Values.email.base_url }}.{{ .Release.Namespace }}:80'
+```
+
+deployment.yaml
+```yaml
+- name: EMAIL_REST_URL
+  value: "{{ tpl .Values.email.base_url_full . }}"
+```
+
+If you use range then you must use `$`:
+```yaml
+value: "{{ tpl $Values.email.base_url_full $ }}"
+```
+
+
+
+
+
+
+
+
+
+
+
+<br><br>
+<br><br>
 <br><br>
 <br><br>
 
@@ -1134,4 +1208,52 @@ kubectl describe ingress gitlab-dev-webservice-default -n dev
 
 
 </details>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<br><br>
+<br><br>
+__________________________________________
+__________________________________________
+<br><br>
+<br><br>
+
+
+
+
+# FAQ
+
+## Common Errors
+
+### Helm Templates
+
+#### did not find expected '-' indica
+- Check if your yaml is correct or some space is missing
 
