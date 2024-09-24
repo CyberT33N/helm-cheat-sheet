@@ -326,6 +326,13 @@ _________________________________________________
 
 ### Values
 
+#### quote
+- You can set quotes by yourself or you use `| quote`
+```
+value: {{ .Values.redis.password | quote }} // <-- Syntax Highlighting
+value: '{{ .Values.redis.password }}' // <-- No msyntax Highlighting
+```
+
 <br><br>
 
 #### Range (for loop)
