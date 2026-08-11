@@ -7,6 +7,22 @@ Helm Cheat Sheet with the most needed stuff..
 
 
 # Install
+
+
+## Windows
+
+
+### choco
+- Run as powershell with admin
+
+```
+choco install kubernetes-helm
+```
+
+
+## Ubuntu
+
+
 ```shell
 curl https://baltocdn.com/helm/signing.asc | gpg --dearmor | sudo tee /usr/share/keyrings/helm.gpg > /dev/null
 sudo apt-get install apt-transport-https --yes
